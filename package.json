@@ -10,6 +10,7 @@
     "dev:watch": "tsx watch --tsconfig tsconfig.json src/index.ts",
     "dev:nodemon": "nodemon --exec tsx src/index.ts",
     "test": "jest",
+    "clean": "rimraf dist",
     "test:watch": "jest --watch",
     "db:migrate": "tsx src/database/migrate.ts",
     "db:seed": "tsx src/database/seed.ts",
