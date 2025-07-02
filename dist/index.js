@@ -10,14 +10,14 @@ const compression_1 = __importDefault(require("compression"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const path_1 = __importDefault(require("path"));
 const http_1 = __importDefault(require("http"));
-const socket_io_1 = require("socket.io");
 const dotenv_1 = __importDefault(require("dotenv"));
 // Load environment variables
 dotenv_1.default.config();
 // Import configurations
 const prisma_1 = require("./config/prisma");
 const swagger_1 = __importDefault(require("./config/swagger"));
-const socket_1 = require("./config/socket");
+const socket_1 = __importDefault(require("./config/socket"));
+const cronService_1 = __importDefault(require("./services/cronService"));
 // Import routes
 const auth_1 = __importDefault(require("./routes/auth"));
 const users_1 = __importDefault(require("./routes/users"));
@@ -26,27 +26,22 @@ const tasks_1 = __importDefault(require("./routes/tasks"));
 const teams_1 = __importDefault(require("./routes/teams"));
 const notifications_1 = __importDefault(require("./routes/notifications"));
 const files_1 = __importDefault(require("./routes/files"));
+const health_1 = __importDefault(require("./routes/health"));
 // Import middleware
 const errorHandler_1 = require("./middleware/errorHandler");
 class Server {
     app;
     server;
-    io;
     port;
     constructor() {
         this.app = (0, express_1.default)();
         this.server = http_1.default.createServer(this.app);
-        this.io = new socket_io_1.Server(this.server, {
-            cors: {
-                origin: process.env.CLIENT_URL || "http://localhost:3001",
-                methods: ["GET", "POST"],
-            },
-        });
         this.port = parseInt(process.env.PORT || "3000", 10);
         this.initializeDatabase();
         this.initializeMiddlewares();
         this.initializeRoutes();
-        this.initializeSocketIO();
+        this.initializeSocket();
+        this.initializeCronJobs();
         this.initializeSwagger();
         this.initializeErrorHandling();
     }
@@ -83,22 +78,14 @@ class Server {
         this.app.use((0, compression_1.default)());
         // Logging middleware
         if (process.env.NODE_ENV !== "test") {
-            // TODO: Re-enable morgan after fixing TypeScript import
             // this.app.use(morgan('combined'));
         }
         // Static files
         this.app.use("/uploads", express_1.default.static(path_1.default.join(process.cwd(), "uploads")));
     }
     initializeRoutes() {
-        // Health check
-        this.app.get("/health", (_req, res) => {
-            res.status(200).json({
-                status: "OK",
-                timestamp: new Date().toISOString(),
-                uptime: process.uptime(),
-                environment: process.env.NODE_ENV || "development",
-            });
-        });
+        // Health check routes
+        this.app.use("/health", health_1.default);
         // API routes
         this.app.use("/api/auth", auth_1.default);
         this.app.use("/api/users", users_1.default);
@@ -116,10 +103,13 @@ class Server {
             });
         });
     }
-    initializeSocketIO() {
-        (0, socket_1.setupSocketIO)(this.io);
-        // Make io accessible to other parts of the application
-        this.app.set("io", this.io);
+    initializeSocket() {
+        socket_1.default.initialize(this.server);
+        // Make socket service accessible to controllers
+        this.app.set("socketService", socket_1.default);
+    }
+    initializeCronJobs() {
+        cronService_1.default.initialize();
     }
     initializeSwagger() {
         (0, swagger_1.default)(this.app);
@@ -140,9 +130,6 @@ class Server {
     }
     getServer() {
         return this.server;
-    }
-    getIO() {
-        return this.io;
     }
 }
 // Create and start server

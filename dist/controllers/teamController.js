@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const teamService_1 = __importDefault(require("../services/teamService"));
 const express_validator_1 = require("express-validator");
+const socket_1 = __importDefault(require("../config/socket"));
 class TeamController {
     async getAllTeams(req, res, next) {
         try {
@@ -104,6 +105,10 @@ class TeamController {
                 return;
             }
             const result = await teamService_1.default.addTeamMember(req.params.id, req.body.userId, req.body.role);
+            // Emit real-time event for team member addition
+            if (result.success && result.data) {
+                socket_1.default.emitTeamMemberAdded(req.params.id, result.data);
+            }
             res.status(201).json(result);
         }
         catch (error) {
@@ -113,6 +118,10 @@ class TeamController {
     async removeTeamMember(req, res, next) {
         try {
             const result = await teamService_1.default.removeTeamMember(req.params.id, req.params.userId);
+            // Emit real-time event for team member removal
+            if (result.success) {
+                socket_1.default.emitTeamMemberRemoved(req.params.id, req.params.userId);
+            }
             res.json(result);
         }
         catch (error) {

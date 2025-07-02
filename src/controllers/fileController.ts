@@ -2,6 +2,7 @@ import fileService from "../services/fileService";
 import { Request, Response, NextFunction } from "express";
 import { RequestUser } from "../types/index";
 import multer from "multer";
+import socketService from "../config/socket";
 
 interface AuthenticatedRequest extends Request {
   user: RequestUser;
@@ -39,6 +40,12 @@ class FileController {
         req.user.id,
         req.file
       );
+
+      // Emit real-time event for file upload
+      if (result.success && result.data) {
+        socketService.emitFileUploaded(req.body.taskId, result.data);
+      }
+
       res.status(201).json(result);
     } catch (error) {
       next(error);

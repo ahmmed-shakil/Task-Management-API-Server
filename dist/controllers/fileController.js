@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const fileService_1 = __importDefault(require("../services/fileService"));
 const multer_1 = __importDefault(require("multer"));
+const socket_1 = __importDefault(require("../config/socket"));
 class FileController {
     // Upload file
     async uploadFile(req, res, next) {
@@ -26,6 +27,10 @@ class FileController {
                 return;
             }
             const result = await fileService_1.default.uploadFile(req.body.taskId, req.user.id, req.file);
+            // Emit real-time event for file upload
+            if (result.success && result.data) {
+                socket_1.default.emitFileUploaded(req.body.taskId, result.data);
+            }
             res.status(201).json(result);
         }
         catch (error) {

@@ -40,11 +40,10 @@ class NotificationService {
             const { page = 1, limit = 10, isRead, type } = query;
             // Create filter object matching the shape expected by the method
             const filters = {
-                page: parseInt(typeof page === 'string' ? page : String(page)),
-                limit: parseInt(typeof limit === 'string' ? limit : String(limit)),
-                isRead: isRead === "true" ? true :
-                    isRead === "false" ? false : undefined,
-                type: type || undefined
+                page: parseInt(typeof page === "string" ? page : String(page)),
+                limit: parseInt(typeof limit === "string" ? limit : String(limit)),
+                isRead: isRead === "true" ? true : isRead === "false" ? false : undefined,
+                type: type || undefined,
             };
             const result = await notificationMethods.getNotificationsByUserId(userId, filters);
             return {

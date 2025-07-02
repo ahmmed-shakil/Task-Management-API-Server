@@ -5,7 +5,6 @@ import compression from "compression";
 import rateLimit from "express-rate-limit";
 import path from "path";
 import http from "http";
-import { Server as SocketIOServer } from "socket.io";
 import dotenv from "dotenv";
 
 // Load environment variables
@@ -14,7 +13,8 @@ dotenv.config();
 // Import configurations
 import { prisma } from "./config/prisma";
 import swaggerSetup from "./config/swagger";
-import { setupSocketIO } from "./config/socket";
+import socketService from "./config/socket";
+import cronService from "./services/cronService";
 
 // Import routes
 import authRoutes from "./routes/auth";
@@ -24,6 +24,7 @@ import taskRoutes from "./routes/tasks";
 import teamRoutes from "./routes/teams";
 import notificationRoutes from "./routes/notifications";
 import fileRoutes from "./routes/files";
+import healthRoutes from "./routes/health";
 
 // Import middleware
 import { errorHandler } from "./middleware/errorHandler";
@@ -31,24 +32,18 @@ import { errorHandler } from "./middleware/errorHandler";
 class Server {
   private app: Express;
   private server: http.Server;
-  private io: SocketIOServer;
   private port: number;
 
   constructor() {
     this.app = express();
     this.server = http.createServer(this.app);
-    this.io = new SocketIOServer(this.server, {
-      cors: {
-        origin: process.env.CLIENT_URL || "http://localhost:3001",
-        methods: ["GET", "POST"],
-      },
-    });
     this.port = parseInt(process.env.PORT || "3000", 10);
 
     this.initializeDatabase();
     this.initializeMiddlewares();
     this.initializeRoutes();
-    this.initializeSocketIO();
+    this.initializeSocket();
+    this.initializeCronJobs();
     this.initializeSwagger();
     this.initializeErrorHandling();
   }
@@ -93,7 +88,6 @@ class Server {
 
     // Logging middleware
     if (process.env.NODE_ENV !== "test") {
-      // TODO: Re-enable morgan after fixing TypeScript import
       // this.app.use(morgan('combined'));
     }
 
@@ -105,15 +99,8 @@ class Server {
   }
 
   private initializeRoutes(): void {
-    // Health check
-    this.app.get("/health", (_req: Request, res: Response) => {
-      res.status(200).json({
-        status: "OK",
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime(),
-        environment: process.env.NODE_ENV || "development",
-      });
-    });
+    // Health check routes
+    this.app.use("/health", healthRoutes);
 
     // API routes
     this.app.use("/api/auth", authRoutes);
@@ -134,11 +121,15 @@ class Server {
     });
   }
 
-  private initializeSocketIO(): void {
-    setupSocketIO(this.io);
+  private initializeSocket(): void {
+    socketService.initialize(this.server);
 
-    // Make io accessible to other parts of the application
-    this.app.set("io", this.io);
+    // Make socket service accessible to controllers
+    this.app.set("socketService", socketService);
+  }
+
+  private initializeCronJobs(): void {
+    cronService.initialize();
   }
 
   private initializeSwagger(): void {
@@ -168,10 +159,6 @@ class Server {
 
   public getServer(): http.Server {
     return this.server;
-  }
-
-  public getIO(): SocketIOServer {
-    return this.io;
   }
 }
 

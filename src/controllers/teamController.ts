@@ -2,6 +2,7 @@ import teamService from "../services/teamService";
 import { validationResult } from "express-validator";
 import { Request, Response, NextFunction } from "express";
 import { RequestUser, CreateTeamData } from "../types/index";
+import socketService from "../config/socket";
 
 interface AuthenticatedRequest extends Request {
   user: RequestUser;
@@ -143,6 +144,12 @@ class TeamController {
         req.body.userId,
         req.body.role
       );
+
+      // Emit real-time event for team member addition
+      if (result.success && result.data) {
+        socketService.emitTeamMemberAdded(req.params.id!, result.data);
+      }
+
       res.status(201).json(result);
     } catch (error) {
       next(error);
@@ -159,6 +166,12 @@ class TeamController {
         req.params.id!,
         req.params.userId!
       );
+
+      // Emit real-time event for team member removal
+      if (result.success) {
+        socketService.emitTeamMemberRemoved(req.params.id!, req.params.userId!);
+      }
+
       res.json(result);
     } catch (error) {
       next(error);

@@ -2,6 +2,7 @@ import notificationService from "../services/notificationService";
 import { validationResult } from "express-validator";
 import { Request, Response, NextFunction } from "express";
 import { RequestUser } from "../types/index";
+import socketService from "../config/socket";
 
 interface AuthenticatedRequest extends Request {
   user: RequestUser;
@@ -75,6 +76,15 @@ class NotificationController {
       const result = await notificationService.createNotification(
         notificationData
       );
+
+      // Emit real-time notification to the user
+      if (result.success && result.data) {
+        socketService.emitNotificationToUser(
+          notificationData.userId,
+          result.data
+        );
+      }
+
       res.status(201).json(result);
     } catch (error) {
       next(error);

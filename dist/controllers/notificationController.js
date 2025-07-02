@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const notificationService_1 = __importDefault(require("../services/notificationService"));
 const express_validator_1 = require("express-validator");
+const socket_1 = __importDefault(require("../config/socket"));
 class NotificationController {
     async getNotifications(req, res, next) {
         try {
@@ -50,6 +51,10 @@ class NotificationController {
                 userId: req.body.userId || req.user.id,
             };
             const result = await notificationService_1.default.createNotification(notificationData);
+            // Emit real-time notification to the user
+            if (result.success && result.data) {
+                socket_1.default.emitNotificationToUser(notificationData.userId, result.data);
+            }
             res.status(201).json(result);
         }
         catch (error) {

@@ -2,6 +2,7 @@ import taskService from "../services/taskService";
 import { validationResult } from "express-validator";
 import { Request, Response, NextFunction } from "express";
 import { RequestUser } from "../types/index";
+import socketService from "../config/socket";
 
 interface AuthenticatedRequest extends Request {
   user: RequestUser;
@@ -48,6 +49,12 @@ class TaskController {
       }
 
       const result = await taskService.createTask(req.user.id, req.body);
+
+      // Emit real-time event for task creation
+      if (result.success && result.data) {
+        socketService.emitTaskCreated(result.data.project_id, result.data);
+      }
+
       res.status(201).json(result);
     } catch (error) {
       next(error);
@@ -88,6 +95,17 @@ class TaskController {
         req.user.id,
         req.body
       );
+
+      // Emit real-time event for task update
+      if (result.success && result.data) {
+        socketService.emitTaskUpdated(result.data.project_id, result.data);
+
+        // If task status changed to completed, emit special event
+        if (result.data.status === "completed") {
+          socketService.emitTaskCompleted(result.data.project_id, result.data);
+        }
+      }
+
       res.json(result);
     } catch (error) {
       next(error);
@@ -100,7 +118,19 @@ class TaskController {
     next: NextFunction
   ): Promise<void> {
     try {
+      // Get task data before deletion for socket event
+      const taskData = await taskService.getTaskById(
+        req.params.id!,
+        req.user.id
+      );
+
       const result = await taskService.deleteTask(req.params.id!, req.user.id);
+
+      // Emit real-time event for task deletion
+      if (result.success && taskData.success && taskData.data) {
+        socketService.emitTaskDeleted(taskData.data.project_id, req.params.id!);
+      }
+
       res.json(result);
     } catch (error) {
       next(error);

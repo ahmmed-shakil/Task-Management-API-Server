@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const taskService_1 = __importDefault(require("../services/taskService"));
 const express_validator_1 = require("express-validator");
+const socket_1 = __importDefault(require("../config/socket"));
 class TaskController {
     async getAllTasks(req, res, next) {
         try {
@@ -36,6 +37,10 @@ class TaskController {
                 return;
             }
             const result = await taskService_1.default.createTask(req.user.id, req.body);
+            // Emit real-time event for task creation
+            if (result.success && result.data) {
+                socket_1.default.emitTaskCreated(result.data.project_id, result.data);
+            }
             res.status(201).json(result);
         }
         catch (error) {
@@ -63,6 +68,14 @@ class TaskController {
                 return;
             }
             const result = await taskService_1.default.updateTask(req.params.id, req.user.id, req.body);
+            // Emit real-time event for task update
+            if (result.success && result.data) {
+                socket_1.default.emitTaskUpdated(result.data.project_id, result.data);
+                // If task status changed to completed, emit special event
+                if (result.data.status === "completed") {
+                    socket_1.default.emitTaskCompleted(result.data.project_id, result.data);
+                }
+            }
             res.json(result);
         }
         catch (error) {
@@ -71,7 +84,13 @@ class TaskController {
     }
     async deleteTask(req, res, next) {
         try {
+            // Get task data before deletion for socket event
+            const taskData = await taskService_1.default.getTaskById(req.params.id, req.user.id);
             const result = await taskService_1.default.deleteTask(req.params.id, req.user.id);
+            // Emit real-time event for task deletion
+            if (result.success && taskData.success && taskData.data) {
+                socket_1.default.emitTaskDeleted(taskData.data.project_id, req.params.id);
+            }
             res.json(result);
         }
         catch (error) {
