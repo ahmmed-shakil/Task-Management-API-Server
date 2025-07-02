@@ -1,6 +1,5 @@
 import { prisma } from "../config/prisma";
 import { Notification, NotificationFilters } from "../types/index";
-import { Prisma } from "../generated/prisma";
 
 // Helper function to map Prisma notification to Notification interface
 const mapPrismaNotificationToNotification = (
@@ -32,7 +31,7 @@ export const getNotificationsByUserId = async (
     const { page = 1, limit = 10, isRead, type } = filters;
     const skip = (page - 1) * limit;
 
-    const where: Prisma.NotificationWhereInput = {
+    const where: any = {
       userId,
       ...(isRead !== undefined && { isRead }),
       ...(type && { type }),

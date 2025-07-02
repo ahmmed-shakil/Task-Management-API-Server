@@ -318,7 +318,9 @@ export const getUserTeams = async (userId: string): Promise<Team[]> => {
       },
     });
 
-    return teamMembers.map((member) => mapPrismaTeamToTeam(member.team));
+    return teamMembers.map((member: { team: any }) =>
+      mapPrismaTeamToTeam(member.team)
+    );
   } catch (error) {
     console.error("Error getting user teams:", error);
     throw new Error("Failed to get user teams");

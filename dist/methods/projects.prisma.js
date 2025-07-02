@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAllProjects = exports.getUserProjects = exports.removeProjectMember = exports.addProjectMember = exports.getProjectMembers = exports.isProjectMember = exports.calculateProjectProgress = exports.restoreProject = exports.archiveProject = exports.updateProjectStatus = exports.updateProjectProgress = exports.getProjectsByTeam = exports.getProjectsByOwner = exports.getProjects = exports.deleteProject = exports.updateProject = exports.createProject = exports.getProjectWithDetails = exports.getProjectById = void 0;
 const prisma_1 = require("../config/prisma");
-const prisma_2 = require("../generated/prisma");
+const client_1 = require("@prisma/client");
 // Helper function to map Prisma project to Project interface
 const mapPrismaProjectToProject = (prismaProject) => {
     return {
@@ -129,7 +129,7 @@ const createProject = async (projectData) => {
                 endDate: endDate ? new Date(endDate) : null,
                 ownerId,
                 teamId: teamId ?? null,
-                budget: budget ? new prisma_2.Prisma.Decimal(budget) : null,
+                budget: budget ? new client_1.Prisma.Decimal(budget) : null,
             },
         });
         return mapPrismaProjectToProject(project);
@@ -164,7 +164,7 @@ const updateProject = async (id, updateData) => {
             updateFields.teamId = updateData.teamId ?? null;
         if (updateData.budget !== undefined)
             updateFields.budget = updateData.budget
-                ? new prisma_2.Prisma.Decimal(updateData.budget)
+                ? new client_1.Prisma.Decimal(updateData.budget)
                 : null;
         const project = await prisma_1.prisma.project.update({
             where: { id },
@@ -173,7 +173,7 @@ const updateProject = async (id, updateData) => {
         return mapPrismaProjectToProject(project);
     }
     catch (error) {
-        if (error instanceof prisma_2.Prisma.PrismaClientKnownRequestError) {
+        if (error instanceof client_1.Prisma.PrismaClientKnownRequestError) {
             if (error.code === "P2025") {
                 return null; // Project not found
             }
@@ -192,7 +192,7 @@ const deleteProject = async (id) => {
         return true;
     }
     catch (error) {
-        if (error instanceof prisma_2.Prisma.PrismaClientKnownRequestError) {
+        if (error instanceof client_1.Prisma.PrismaClientKnownRequestError) {
             if (error.code === "P2025") {
                 return false; // Project not found
             }
@@ -335,7 +335,7 @@ const updateProjectProgress = async (id, progress) => {
         return mapPrismaProjectToProject(project);
     }
     catch (error) {
-        if (error instanceof prisma_2.Prisma.PrismaClientKnownRequestError) {
+        if (error instanceof client_1.Prisma.PrismaClientKnownRequestError) {
             if (error.code === "P2025") {
                 return null; // Project not found
             }
@@ -355,7 +355,7 @@ const updateProjectStatus = async (id, status) => {
         return mapPrismaProjectToProject(project);
     }
     catch (error) {
-        if (error instanceof prisma_2.Prisma.PrismaClientKnownRequestError) {
+        if (error instanceof client_1.Prisma.PrismaClientKnownRequestError) {
             if (error.code === "P2025") {
                 return null; // Project not found
             }
@@ -375,7 +375,7 @@ const archiveProject = async (id) => {
         return true;
     }
     catch (error) {
-        if (error instanceof prisma_2.Prisma.PrismaClientKnownRequestError) {
+        if (error instanceof client_1.Prisma.PrismaClientKnownRequestError) {
             if (error.code === "P2025") {
                 return false; // Project not found
             }
@@ -395,7 +395,7 @@ const restoreProject = async (id) => {
         return true;
     }
     catch (error) {
-        if (error instanceof prisma_2.Prisma.PrismaClientKnownRequestError) {
+        if (error instanceof client_1.Prisma.PrismaClientKnownRequestError) {
             if (error.code === "P2025") {
                 return false; // Project not found
             }

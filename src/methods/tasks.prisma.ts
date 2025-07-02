@@ -7,7 +7,7 @@ import {
   TaskWithDetails,
   PaginatedTasks,
 } from "../types/index";
-import { Prisma } from "../generated/prisma";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 interface TaskFilters {
   page?: number;
@@ -161,7 +161,7 @@ export const getTaskWithDetails = async (
             status: task.parentTask.status as TaskStatus,
           }
         : null,
-      subtasks: task.subtasks.map((subtask) => ({
+      subtasks: task.subtasks.map((subtask: any) => ({
         id: subtask.id,
         title: subtask.title,
         status: subtask.status as TaskStatus,
@@ -255,7 +255,7 @@ export const updateTask = async (
 
     return mapPrismaTaskToTask(task);
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error instanceof PrismaClientKnownRequestError) {
       if (error.code === "P2025") {
         return null; // Task not found
       }
@@ -273,7 +273,7 @@ export const deleteTask = async (id: string): Promise<boolean> => {
     });
     return true;
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error instanceof PrismaClientKnownRequestError) {
       if (error.code === "P2025") {
         return false; // Task not found
       }
@@ -303,7 +303,7 @@ export const getTasks = async (
   try {
     const skip = (page - 1) * limit;
 
-    const where: Prisma.TaskWhereInput = {
+    const where: any = {
       isArchived: false,
     };
 
@@ -418,7 +418,7 @@ export const getTasks = async (
       prisma.task.count({ where }),
     ]);
 
-    const tasksWithDetails: TaskWithDetails[] = tasks.map((task) => {
+    const tasksWithDetails: TaskWithDetails[] = tasks.map((task: any) => {
       const baseTask = mapPrismaTaskToTask(task);
       return {
         ...baseTask,
@@ -450,7 +450,7 @@ export const getTasks = async (
               status: task.parentTask.status as TaskStatus,
             }
           : null,
-        subtasks: task.subtasks.map((subtask) => ({
+        subtasks: task.subtasks.map((subtask: any) => ({
           id: subtask.id,
           title: subtask.title,
           status: subtask.status as TaskStatus,
@@ -500,7 +500,7 @@ export const archiveTask = async (id: string): Promise<boolean> => {
     });
     return true;
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error instanceof PrismaClientKnownRequestError) {
       if (error.code === "P2025") {
         return false; // Task not found
       }
@@ -519,7 +519,7 @@ export const restoreTask = async (id: string): Promise<boolean> => {
     });
     return true;
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error instanceof PrismaClientKnownRequestError) {
       if (error.code === "P2025") {
         return false; // Task not found
       }
@@ -559,7 +559,7 @@ export const updateTaskStatus = async (
 
     return mapPrismaTaskToTask(task);
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error instanceof PrismaClientKnownRequestError) {
       if (error.code === "P2025") {
         return null; // Task not found
       }
@@ -582,7 +582,7 @@ export const logTaskHours = async (
 
     return mapPrismaTaskToTask(task);
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error instanceof PrismaClientKnownRequestError) {
       if (error.code === "P2025") {
         return null; // Task not found
       }
@@ -664,7 +664,7 @@ export const getTaskComments = async (
       prisma.taskComment.count({ where: { taskId } }),
     ]);
 
-    const formattedComments = comments.map((comment) => ({
+    const formattedComments = comments.map((comment: any) => ({
       id: comment.id,
       task_id: comment.taskId,
       user_id: comment.userId,
@@ -819,7 +819,7 @@ export const getTaskAttachments = async (taskId: string) => {
       orderBy: { createdAt: "desc" },
     });
 
-    return attachments.map((attachment) => ({
+    return attachments.map((attachment: any) => ({
       id: attachment.id,
       task_id: attachment.taskId,
       user_id: attachment.userId,

@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "../config/prisma";
 import { User, CreateUserData, UpdateUserData, UserRole } from "../types/index";
-import { Prisma } from "../generated/prisma";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 interface UserWithDetails extends User {
   teams: Array<{
@@ -123,7 +123,7 @@ export const createUser = async (userData: CreateUserData): Promise<User> => {
 
     return mapPrismaUserToUser(user);
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error instanceof PrismaClientKnownRequestError) {
       if (error.code === "P2002") {
         throw new Error("User with this email already exists");
       }
@@ -159,7 +159,7 @@ export const updateUser = async (
 
     return mapPrismaUserToUser(user);
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error instanceof PrismaClientKnownRequestError) {
       if (error.code === "P2025") {
         return null; // User not found
       }
@@ -177,7 +177,7 @@ export const deleteUser = async (id: string): Promise<boolean> => {
     });
     return true;
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error instanceof PrismaClientKnownRequestError) {
       if (error.code === "P2025") {
         return false; // User not found
       }
@@ -198,7 +198,7 @@ export const getAllUsers = async (
   try {
     const skip = (page - 1) * limit;
 
-    const where: Prisma.UserWhereInput = {};
+    const where: any = {};
 
     if (search) {
       where.OR = [
@@ -301,12 +301,12 @@ export const getUserWithDetails = async (
 
     return {
       ...baseUser,
-      teams: user.teamMemberships.map((membership) => ({
+      teams: user.teamMemberships.map((membership: any) => ({
         id: membership.team.id,
         name: membership.team.name,
         role: membership.role,
       })),
-      projects: user.ownedProjects.map((project) => ({
+      projects: user.ownedProjects.map((project: any) => ({
         id: project.id,
         name: project.name,
         role: "owner",
@@ -333,7 +333,7 @@ export const updateUserPassword = async (
 
     return true;
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error instanceof PrismaClientKnownRequestError) {
       if (error.code === "P2025") {
         return false; // User not found
       }

@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAllTasks = exports.getUserTasks = exports.deleteTaskAttachment = exports.getTaskAttachments = exports.addTaskAttachment = exports.deleteTaskComment = exports.updateTaskComment = exports.getTaskComments = exports.addTaskComment = exports.logTaskHours = exports.updateTaskStatus = exports.updateTaskPosition = exports.restoreTask = exports.archiveTask = exports.getTasksByAssignee = exports.getTasksByProject = exports.getTasks = exports.deleteTask = exports.updateTask = exports.createTask = exports.getTaskWithDetails = exports.getTaskById = void 0;
 const prisma_1 = require("../config/prisma");
-const prisma_2 = require("../generated/prisma");
+const client_1 = require("@prisma/client");
 // Helper function to map Prisma task to Task interface
 const mapPrismaTaskToTask = (prismaTask) => {
     return {
@@ -213,7 +213,7 @@ const updateTask = async (id, updateData) => {
         return mapPrismaTaskToTask(task);
     }
     catch (error) {
-        if (error instanceof prisma_2.Prisma.PrismaClientKnownRequestError) {
+        if (error instanceof client_1.Prisma.PrismaClientKnownRequestError) {
             if (error.code === "P2025") {
                 return null; // Task not found
             }
@@ -232,7 +232,7 @@ const deleteTask = async (id) => {
         return true;
     }
     catch (error) {
-        if (error instanceof prisma_2.Prisma.PrismaClientKnownRequestError) {
+        if (error instanceof client_1.Prisma.PrismaClientKnownRequestError) {
             if (error.code === "P2025") {
                 return false; // Task not found
             }
@@ -431,7 +431,7 @@ const archiveTask = async (id) => {
         return true;
     }
     catch (error) {
-        if (error instanceof prisma_2.Prisma.PrismaClientKnownRequestError) {
+        if (error instanceof client_1.Prisma.PrismaClientKnownRequestError) {
             if (error.code === "P2025") {
                 return false; // Task not found
             }
@@ -451,7 +451,7 @@ const restoreTask = async (id) => {
         return true;
     }
     catch (error) {
-        if (error instanceof prisma_2.Prisma.PrismaClientKnownRequestError) {
+        if (error instanceof client_1.Prisma.PrismaClientKnownRequestError) {
             if (error.code === "P2025") {
                 return false; // Task not found
             }
@@ -486,7 +486,7 @@ const updateTaskStatus = async (id, status) => {
         return mapPrismaTaskToTask(task);
     }
     catch (error) {
-        if (error instanceof prisma_2.Prisma.PrismaClientKnownRequestError) {
+        if (error instanceof client_1.Prisma.PrismaClientKnownRequestError) {
             if (error.code === "P2025") {
                 return null; // Task not found
             }
@@ -506,7 +506,7 @@ const logTaskHours = async (id, actualHours) => {
         return mapPrismaTaskToTask(task);
     }
     catch (error) {
-        if (error instanceof prisma_2.Prisma.PrismaClientKnownRequestError) {
+        if (error instanceof client_1.Prisma.PrismaClientKnownRequestError) {
             if (error.code === "P2025") {
                 return null; // Task not found
             }

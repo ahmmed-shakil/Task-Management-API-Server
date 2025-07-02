@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyUserPassword = exports.userExists = exports.updateUserLastLogin = exports.updateUserPassword = exports.getUserWithDetails = exports.getAllUsers = exports.deleteUser = exports.updateUser = exports.createUser = exports.getUserByEmail = exports.getUserById = void 0;
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const prisma_1 = require("../config/prisma");
-const prisma_2 = require("../generated/prisma");
+const client_1 = require("@prisma/client");
 // Helper function to map Prisma user to User interface
 const mapPrismaUserToUser = (prismaUser) => {
     return {
@@ -101,7 +101,7 @@ const createUser = async (userData) => {
         return mapPrismaUserToUser(user);
     }
     catch (error) {
-        if (error instanceof prisma_2.Prisma.PrismaClientKnownRequestError) {
+        if (error instanceof client_1.Prisma.PrismaClientKnownRequestError) {
             if (error.code === "P2002") {
                 throw new Error("User with this email already exists");
             }
@@ -134,7 +134,7 @@ const updateUser = async (id, updateData) => {
         return mapPrismaUserToUser(user);
     }
     catch (error) {
-        if (error instanceof prisma_2.Prisma.PrismaClientKnownRequestError) {
+        if (error instanceof client_1.Prisma.PrismaClientKnownRequestError) {
             if (error.code === "P2025") {
                 return null; // User not found
             }
@@ -153,7 +153,7 @@ const deleteUser = async (id) => {
         return true;
     }
     catch (error) {
-        if (error instanceof prisma_2.Prisma.PrismaClientKnownRequestError) {
+        if (error instanceof client_1.Prisma.PrismaClientKnownRequestError) {
             if (error.code === "P2025") {
                 return false; // User not found
             }
@@ -289,7 +289,7 @@ const updateUserPassword = async (id, newPassword) => {
         return true;
     }
     catch (error) {
-        if (error instanceof prisma_2.Prisma.PrismaClientKnownRequestError) {
+        if (error instanceof client_1.Prisma.PrismaClientKnownRequestError) {
             if (error.code === "P2025") {
                 return false; // User not found
             }

@@ -7,7 +7,6 @@ import {
   ProjectWithDetails,
   PaginatedProjects,
 } from "../types/index";
-import { Prisma } from "../generated/prisma";
 
 interface ProjectFilters {
   page?: number;
@@ -108,11 +107,15 @@ export const getProjectWithDetails = async (
     // Calculate task statistics
     const taskStats = {
       total: project.tasks.length,
-      completed: project.tasks.filter((task) => task.status === "completed")
-        .length,
-      inProgress: project.tasks.filter((task) => task.status === "in_progress")
-        .length,
-      todo: project.tasks.filter((task) => task.status === "todo").length,
+      completed: project.tasks.filter(
+        (task: { status: string }) => task.status === "completed"
+      ).length,
+      inProgress: project.tasks.filter(
+        (task: { status: string }) => task.status === "in_progress"
+      ).length,
+      todo: project.tasks.filter(
+        (task: { status: string }) => task.status === "todo"
+      ).length,
     };
 
     return {
@@ -166,7 +169,7 @@ export const createProject = async (
         endDate: endDate ? new Date(endDate) : null,
         ownerId,
         teamId: teamId ?? null,
-        budget: budget ? new Prisma.Decimal(budget) : null,
+        budget: budget ? Number(budget) : null,
       },
     });
 
@@ -203,7 +206,7 @@ export const updateProject = async (
       updateFields.teamId = updateData.teamId ?? null;
     if (updateData.budget !== undefined)
       updateFields.budget = updateData.budget
-        ? new Prisma.Decimal(updateData.budget)
+        ? Number(updateData.budget)
         : null;
 
     const project = await prisma.project.update({
@@ -212,11 +215,9 @@ export const updateProject = async (
     });
 
     return mapPrismaProjectToProject(project);
-  } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === "P2025") {
-        return null; // Project not found
-      }
+  } catch (error: any) {
+    if (error.code === "P2025") {
+      return null; // Project not found
     }
     console.error("Error updating project:", error);
     throw new Error("Failed to update project");
@@ -230,11 +231,9 @@ export const deleteProject = async (id: string): Promise<boolean> => {
       where: { id },
     });
     return true;
-  } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === "P2025") {
-        return false; // Project not found
-      }
+  } catch (error: any) {
+    if (error.code === "P2025") {
+      return false; // Project not found
     }
     console.error("Error deleting project:", error);
     throw new Error("Failed to delete project");
@@ -259,7 +258,7 @@ export const getProjects = async (
   try {
     const skip = (page - 1) * limit;
 
-    const where: Prisma.ProjectWhereInput = {};
+    const where: any = {};
 
     if (search) {
       where.OR = [
@@ -337,18 +336,21 @@ export const getProjects = async (
     ]);
 
     const projectsWithDetails: ProjectWithDetails[] = projects.map(
-      (project) => {
+      (project: any) => {
         const baseProject = mapPrismaProjectToProject(project);
 
         // Calculate task statistics
         const taskStats = {
           total: project.tasks.length,
-          completed: project.tasks.filter((task) => task.status === "completed")
-            .length,
-          inProgress: project.tasks.filter(
-            (task) => task.status === "in_progress"
+          completed: project.tasks.filter(
+            (task: { status: string }) => task.status === "completed"
           ).length,
-          todo: project.tasks.filter((task) => task.status === "todo").length,
+          inProgress: project.tasks.filter(
+            (task: { status: string }) => task.status === "in_progress"
+          ).length,
+          todo: project.tasks.filter(
+            (task: { status: string }) => task.status === "todo"
+          ).length,
         };
 
         return {
@@ -407,11 +409,9 @@ export const updateProjectProgress = async (
     });
 
     return mapPrismaProjectToProject(project);
-  } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === "P2025") {
-        return null; // Project not found
-      }
+  } catch (error: any) {
+    if (error.code === "P2025") {
+      return null; // Project not found
     }
     console.error("Error updating project progress:", error);
     throw new Error("Failed to update project progress");
@@ -430,11 +430,9 @@ export const updateProjectStatus = async (
     });
 
     return mapPrismaProjectToProject(project);
-  } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === "P2025") {
-        return null; // Project not found
-      }
+  } catch (error: any) {
+    if (error.code === "P2025") {
+      return null; // Project not found
     }
     console.error("Error updating project status:", error);
     throw new Error("Failed to update project status");
@@ -449,11 +447,9 @@ export const archiveProject = async (id: string): Promise<boolean> => {
       data: { isActive: false },
     });
     return true;
-  } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === "P2025") {
-        return false; // Project not found
-      }
+  } catch (error: any) {
+    if (error.code === "P2025") {
+      return false; // Project not found
     }
     console.error("Error archiving project:", error);
     throw new Error("Failed to archive project");
@@ -468,11 +464,9 @@ export const restoreProject = async (id: string): Promise<boolean> => {
       data: { isActive: true },
     });
     return true;
-  } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === "P2025") {
-        return false; // Project not found
-      }
+  } catch (error: any) {
+    if (error.code === "P2025") {
+      return false; // Project not found
     }
     console.error("Error restoring project:", error);
     throw new Error("Failed to restore project");
@@ -506,7 +500,7 @@ export const calculateProjectProgress = async (id: string): Promise<number> => {
     }
 
     const completedTasks = project.tasks.filter(
-      (task) => task.status === "completed"
+      (task: { status: string }) => task.status === "completed"
     ).length;
     const progress = Math.round((completedTasks / totalTasks) * 100);
 
@@ -611,7 +605,7 @@ export const getProjectMembers = async (projectId: string) => {
     ];
 
     if (project.team) {
-      project.team.members.forEach((member) => {
+      project.team.members.forEach((member: any) => {
         members.push({
           ...member.user,
           role: member.role,
@@ -793,17 +787,20 @@ export const getUserProjects = async (
       prisma.project.count({ where: whereCondition }),
     ]);
 
-    const projectsWithDetails = projects.map((project) => {
+    const projectsWithDetails = projects.map((project: any) => {
       const baseProject = mapPrismaProjectToProject(project);
 
       const taskStats = {
         total: project.tasks.length,
-        completed: project.tasks.filter((task) => task.status === "completed")
-          .length,
-        inProgress: project.tasks.filter(
-          (task) => task.status === "in_progress"
+        completed: project.tasks.filter(
+          (task: { status: string }) => task.status === "completed"
         ).length,
-        todo: project.tasks.filter((task) => task.status === "todo").length,
+        inProgress: project.tasks.filter(
+          (task: { status: string }) => task.status === "in_progress"
+        ).length,
+        todo: project.tasks.filter(
+          (task: { status: string }) => task.status === "todo"
+        ).length,
       };
 
       return {

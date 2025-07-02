@@ -25,16 +25,16 @@ export declare const calculateProjectProgress: (id: string) => Promise<number>;
 export declare const isProjectMember: (projectId: string, userId: string) => Promise<string | null>;
 export declare const getProjectMembers: (projectId: string) => Promise<{
     role: string;
-    id: string;
     email: string;
+    id: string;
     firstName: string;
     lastName: string;
     avatar: string | null;
 }[]>;
 export declare const addProjectMember: (projectId: string, userId: string, role?: string) => Promise<{
     role: string;
-    id: string;
     email: string;
+    id: string;
     firstName: string;
     lastName: string;
     avatar: string | null;
@@ -43,8 +43,8 @@ export declare const removeProjectMember: (projectId: string, userId: string) =>
 export declare const getUserProjects: (userId: string, filters?: Omit<ProjectFilters, "ownerId">) => Promise<{
     projects: {
         owner: {
-            id: string;
             email: string;
+            id: string;
             firstName: string;
             lastName: string;
             avatar: string | null;

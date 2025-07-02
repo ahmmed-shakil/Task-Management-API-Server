@@ -33,8 +33,8 @@ export declare const addTaskComment: (taskId: string, userId: string, content: s
     created_at: Date;
     updated_at: Date;
     user: {
-        id: string;
         email: string;
+        id: string;
         firstName: string;
         lastName: string;
         avatar: string | null;
@@ -50,8 +50,8 @@ export declare const getTaskComments: (taskId: string, page?: number, limit?: nu
         created_at: Date;
         updated_at: Date;
         user: {
-            id: string;
             email: string;
+            id: string;
             firstName: string;
             lastName: string;
             avatar: string | null;
@@ -71,8 +71,8 @@ export declare const updateTaskComment: (commentId: string, userId: string, cont
     created_at: Date;
     updated_at: Date;
     user: {
-        id: string;
         email: string;
+        id: string;
         firstName: string;
         lastName: string;
         avatar: string | null;
@@ -90,8 +90,8 @@ export declare const addTaskAttachment: (taskId: string, userId: string, fileNam
     mime_type: string;
     created_at: Date;
     user: {
-        id: string;
         email: string;
+        id: string;
         firstName: string;
         lastName: string;
         avatar: string | null;
@@ -108,8 +108,8 @@ export declare const getTaskAttachments: (taskId: string) => Promise<{
     mime_type: string;
     created_at: Date;
     user: {
-        id: string;
         email: string;
+        id: string;
         firstName: string;
         lastName: string;
         avatar: string | null;

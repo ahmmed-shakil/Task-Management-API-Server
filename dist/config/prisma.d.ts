@@ -1,3 +1,6 @@
-import { PrismaClient } from "../generated/prisma";
-export declare const prisma: PrismaClient<import("../generated/prisma").Prisma.PrismaClientOptions, never, import("@/generated/prisma/runtime/library").DefaultArgs>;
+import { PrismaClient } from "@prisma/client";
+declare const prisma: PrismaClient<{
+    log: ("info" | "query" | "warn" | "error")[];
+}, never, import("@prisma/client/runtime/library").DefaultArgs>;
+export { prisma };
 export default prisma;
