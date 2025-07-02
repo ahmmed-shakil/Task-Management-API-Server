@@ -4,7 +4,7 @@
   "description": "A robust RESTful API backend for task management applications",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "npm run clean && npm run generate && tsc",
     "start": "node dist/index.js",
     "dev": "tsx --tsconfig tsconfig.json src/index.ts",
     "dev:watch": "tsx watch --tsconfig tsconfig.json src/index.ts",
